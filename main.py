@@ -12,7 +12,7 @@ if isfile(FILE_NAME):
     dataBase = pickle.load(dataBaseFile)
     dataBaseFile.close()
 else:
-    dataBase = {}
+    dataBase = {'CINEMAS': list(), 'SESSIONS': list()}
 
 presenter = presenter.Presenter()
 view = view.View()
