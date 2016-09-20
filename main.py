@@ -1,4 +1,7 @@
 import pickle
+import application
+import presenter
+import view
 
 from os.path import isfile
 
@@ -11,8 +14,17 @@ if isfile(FILE_NAME):
 else:
     dataBase = {}
 
-run = True
+presenter = presenter.Presenter()
+view = view.View()
 
+presenter.view = view
+presenter.model = dataBase
+
+app = application.Application()
+
+app.presenter = presenter
+
+app.run()
 
 dataBaseFile = open(FILE_NAME, 'wb')
 pickle.dump(dataBase, dataBaseFile)
