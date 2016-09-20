@@ -6,7 +6,8 @@ class Application(object):
 
     def run(self):
         while self.isRunning:
-            pass
+            request = raw_input(">>> ")
+            self.presenter.make_request(request)
 
     def stop(self):
         self.isRunning = False

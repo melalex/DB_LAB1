@@ -2,6 +2,7 @@ import weakref
 
 
 class Presenter(object):
+
     def __init__(self):
         self._view = None
         self._model = None
@@ -30,3 +31,6 @@ class Presenter(object):
     @application.setter
     def application(self, value):
         self._application = weakref.ref(value)
+
+    def make_request(self, request):
+        pass
