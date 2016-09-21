@@ -21,9 +21,6 @@ else:
     dataBase = {"cinemas": cinemas_table, "sessions": sessions_table}
 
 presenter = presenter.Presenter()
-view = view.View()
-
-presenter.view = view
 presenter.model = dataBase
 
 app = application.Application()
