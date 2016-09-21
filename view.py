@@ -1,14 +1,14 @@
 
 class View(object):
 
-    def show_cinemas_table(self, table):
+    def show_table(self, table):
         pass
 
-    def show_sessions_table(self, table):
-        pass
+    def syntax_error(self, request):
+        print 'Syntax error in request "{0}"'.format(request)
 
     def unknown_command(self, command):
-        pass
+        print 'Unknown command "{0}"'.format(command)
 
     def unknown_table(self, table_name):
-        pass
+        print 'Unknown table "{0}"'.format(table_name)

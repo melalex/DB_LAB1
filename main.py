@@ -12,7 +12,13 @@ if isfile(FILE_NAME):
     dataBase = pickle.load(dataBaseFile)
     dataBaseFile.close()
 else:
-    dataBase = {'CINEMAS': list(), 'SESSIONS': list()}
+    cinemas_columns = ("id", "name", "address")
+    cinemas_columns_types = (int, str, str)
+    cinemas_table = {"COLUMNS": cinemas_columns, "COLUMNS_TYPES": cinemas_columns_types, "CONTENT": list()}
+    sessions_columns = ("id", "name", "time", "cinema_id")
+    sessions_columns_types = (int, str, long, int)
+    sessions_table = {"COLUMNS": sessions_columns, "COLUMNS_TYPES": sessions_columns_types, "CONTENT": list()}
+    dataBase = {"cinemas": cinemas_table, "sessions": sessions_table}
 
 presenter = presenter.Presenter()
 view = view.View()

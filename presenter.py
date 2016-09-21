@@ -1,9 +1,14 @@
 import weakref
-
-from re import split
+import re
 
 
 class Presenter(object):
+
+    __SHOW_COMMAND = r"SHOW "
+    __INSERT_COMMAND = r"INSERT "
+    __DELETE_COMMAND = r"DELETE "
+    __SELECT_COMMAND = r"SELECT"
+    __EXIT_COMMAND = r"EXIT"
 
     def __init__(self):
         self._view = None
@@ -32,55 +37,55 @@ class Presenter(object):
 
     @application.setter
     def application(self, value):
-        self._application = weakref.ref(value)
+        ref = weakref.ref(value)
+        self._application = ref()
 
     def make_request(self, request):
-        arguments = split(r"\W+", request)
-
-        arguments_count = len(arguments)
-
-        if arguments_count < 1:
-            return
-
-        command = arguments[0].upper()
-
-        if arguments_count > 2 and command == "SHOW":
-            self.__show_table(arguments[1].upper())
-        elif arguments_count > 4 and command == "INSERT":
-            table_name = arguments[1].upper()
-
-            if table_name == "CINEMAS":
-                self.__insert_into_cinemas(arguments[2], arguments[3])
-            elif arguments_count > 5 and table_name == "SESSIONS":
-                self.__insert_into_sessions(arguments[2], arguments[3], arguments[4])
+        if re.match(self.__SHOW_COMMAND, request, re.IGNORECASE):
+            table_name_regex = re.compile(r'\w+', re.IGNORECASE)
+            table_name = table_name_regex.match(request, len(self.__SHOW_COMMAND))
+            if table_name:
+                self.__show_table(table_name.group(0))
             else:
-                self.view.unknown_table(table_name)
-
-        elif arguments_count > 3 and command == "DELETE":
-            self.__delete(arguments[1].upper(), arguments[2])
-        elif command == "SELECT":
+                self.view.syntax_error(request)
+        elif re.match(self.__INSERT_COMMAND, request, re.IGNORECASE):
+            table_name_regex = re.compile(r'\w+', re.IGNORECASE)
+            table_name = table_name_regex.match(request, len(self.__INSERT_COMMAND))
+            values = re.search(r'\(.+\)', request)
+            if table_name and values:
+                self.__insert_into_table(table_name.group(0), values.group(0))
+            else:
+                self.view.syntax_error(request)
+        elif re.match(self.__DELETE_COMMAND, request, re.IGNORECASE):
+            table_name_regex = re.compile(r'\w+', re.IGNORECASE)
+            table_name = table_name_regex.match(request, len(self.__DELETE_COMMAND))
+            entity_id = re.search(r'\([\d]+\)', request)
+            if table_name and entity_id:
+                self.__insert_into_table(table_name.group(0), entity_id.group(0))
+            else:
+                self.view.syntax_error(request)
+        elif re.match(self.__SELECT_COMMAND, request, re.IGNORECASE):
             self.__select()
-        elif command == "EXIT":
+        elif re.match(self.__EXIT_COMMAND, request, re.IGNORECASE):
             self.application.stop()
         else:
-            self.view.unknown_command(command)
+            command = re.match(r'\w+', request)
+            if command:
+                self.view.unknown_command(command.group(0))
 
     def __show_table(self, table_name):
-        if table_name == "CINEMAS":
-            self.view.show_cinemas_table(self.model[table_name])
-        elif table_name == "SESSIONS":
-            self.view.show_sessions_table(self.model[table_name])
+        if table_name in self.model:
+            self.view.show_table(self.model[table_name])
         else:
-            self.view.unknown_table(table_name)
+            self.view.unknown_command(table_name)
 
-    def __insert_into_cinemas(self, name, location):
-        pass
-
-    def __insert_into_sessions(self, name, time, cinema_id):
-        pass
+    def __insert_into_table(self, table_name, values):
+        print table_name
+        print values
 
     def __delete(self, table_name, entity_id):
-        pass
+        print table_name
+        print entity_id
 
     def __select(self):
         pass
