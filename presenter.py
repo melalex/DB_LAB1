@@ -3,7 +3,6 @@ import re
 
 
 class Presenter(object):
-
     __SHOW_COMMAND = r"SHOW "
     __INSERT_COMMAND = r"INSERT "
     __DELETE_COMMAND = r"DELETE "
@@ -80,8 +79,23 @@ class Presenter(object):
             self.view.unknown_command(table_name)
 
     def __insert_into_table(self, table_name, values):
-        print table_name
-        print values
+        if table_name in self.model:
+            table = self.model[table_name]
+            types = table["COLUMNS_TYPES"]
+            values = values.translate(None, "()")
+            values_list = values.split(",")
+
+            if len(types) - 1 == len(values_list):
+                try:
+                    row = [types[index + 1](value.strip()) for index, value in enumerate(values_list)]
+                    table["CONTENT"].append(row)
+                except ValueError:
+                    self.view.arguments_mismatch(values, table["COLUMNS"])
+            else:
+                self.view.arguments_mismatch(values, table["COLUMNS"])
+
+        else:
+            self.view.unknown_table(table_name)
 
     def __delete(self, table_name, entity_id):
         print table_name

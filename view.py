@@ -12,3 +12,6 @@ class View(object):
 
     def unknown_table(self, table_name):
         print 'Unknown table "{0}"'.format(table_name)
+
+    def arguments_mismatch(self, arguments, table_columns):
+        print 'Arguments_mismatch "({0})" with "{1}"'.format(arguments, table_columns)
