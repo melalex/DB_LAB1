@@ -1,7 +1,7 @@
 import pickle
 import application
 import presenter
-import view
+import time
 
 from os.path import isfile
 
@@ -16,7 +16,7 @@ else:
     cinemas_columns_types = (int, str, str)
     cinemas_table = {"COLUMNS": cinemas_columns, "COLUMNS_TYPES": cinemas_columns_types, "CONTENT": list()}
     sessions_columns = ("id", "name", "time", "cinema_id")
-    sessions_columns_types = (int, str, long, int)
+    sessions_columns_types = (int, str, time.Time, int)
     sessions_table = {"COLUMNS": sessions_columns, "COLUMNS_TYPES": sessions_columns_types, "CONTENT": list()}
     dataBase = {"cinemas": cinemas_table, "sessions": sessions_table}
 

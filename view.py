@@ -24,7 +24,7 @@ def unknown_table(table_name):
 
 
 def arguments_mismatch(arguments, table_columns):
-    print('Arguments_mismatch "({0})" with "{1}"'.format(arguments, table_columns))
+    print('Arguments_mismatch "{0}" with "{1}"'.format(arguments, table_columns))
 
 
 def show_table(table):
