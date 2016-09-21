@@ -1,7 +1,7 @@
 import weakref
 import re
 import view
-import time
+import my_time
 
 from collections import deque
 
@@ -75,10 +75,12 @@ class Presenter(object):
 
             table_name_regex = re.compile(r'\w+', re.IGNORECASE)
             table_name = table_name_regex.match(request, len(self.__DELETE_COMMAND))
-            entity_id = re.search(r'\([\d]+\)', request)
+            values = re.search(r'\([\d]+\)', request)
 
-            if table_name and entity_id:
-                self.__insert_into_table(table_name.group(0), entity_id.group(0))
+            if table_name and values:
+                values_list = values.group(0).translate(None, "()").split(",")
+                values_list = [int(entity_id.strip()) for entity_id in values_list]
+                self.__delete(table_name.group(0), values_list)
             else:
                 view.syntax_error(request)
 
@@ -131,7 +133,7 @@ class Presenter(object):
             table = self.model[table_name]
             types = table["COLUMNS_TYPES"]
             columns = table["COLUMNS"]
-            content = [row for row in table["CONTENT"] if row in entity_ids]
+            content = [row for row in table["CONTENT"] if row[0] in entity_ids]
 
             table = {"COLUMNS": columns, "COLUMNS_TYPES": types, "CONTENT": content}
 
@@ -139,19 +141,19 @@ class Presenter(object):
         else:
             view.unknown_table(table_name)
 
-    def __delete(self, table_name, entity_id):
+    def __delete(self, table_name, entity_ids):
         if table_name in self.model:
             table = self.model[table_name]
-            table["CONTENT"] = [row for row in table["CONTENT"] if row[0] == entity_id]
+            table["CONTENT"] = [row for row in table["CONTENT"] if row[0] not in entity_ids]
 
             if table_name.lower() == "cinemas":
                 table = self.model["sessions"]
-                table["CONTENT"] = [row for row in table["CONTENT"] if row[-1] == entity_id]
+                table["CONTENT"] = [row for row in table["CONTENT"] if row[-1] not in entity_ids]
         else:
             view.unknown_table(table_name)
 
     def __function(self):
         content = self.model["sessions"]["CONTENT"]
-        clock = time.Time("18:00")
-        entity_ids = set(row[-1] for row in content if clock >= row[3])
+        clock = my_time.Time("18:00")
+        entity_ids = [row[-1] for row in content if row[-2] >= clock]
         self.__select("cinemas", entity_ids)

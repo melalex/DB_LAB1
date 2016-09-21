@@ -21,5 +21,5 @@ class Time(object):
 
     def __str__(self):
         hours = self._time // 3600
-        minutes = self.time // 60
-        return str(hours) + ':' + str(minutes)
+        minutes = self.time % 3600 // 60
+        return "%02d" % hours + ':' + "%02d" % minutes

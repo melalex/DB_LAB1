@@ -1,9 +1,10 @@
 import pickle
 import application
 import presenter
-import time
 
 from os.path import isfile
+from my_time import Time
+
 
 FILE_NAME = "cinemas.meldb"
 
@@ -16,7 +17,7 @@ else:
     cinemas_columns_types = (int, str, str)
     cinemas_table = {"COLUMNS": cinemas_columns, "COLUMNS_TYPES": cinemas_columns_types, "CONTENT": list()}
     sessions_columns = ("id", "name", "time", "cinema_id")
-    sessions_columns_types = (int, str, time.Time, int)
+    sessions_columns_types = (int, str, Time, int)
     sessions_table = {"COLUMNS": sessions_columns, "COLUMNS_TYPES": sessions_columns_types, "CONTENT": list()}
     dataBase = {"cinemas": cinemas_table, "sessions": sessions_table}
 
