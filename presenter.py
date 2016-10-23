@@ -7,12 +7,12 @@ from collections import deque
 
 
 class Presenter(object):
-    __SHOW_COMMAND = r"SHOW "
-    __INSERT_COMMAND = r"INSERT "
-    __DELETE_COMMAND = r"DELETE "
-    __SELECT_COMMAND = r"SELECT "
-    __FUNCTION_COMMAND = r"FUNCTION"
-    __EXIT_COMMAND = r"EXIT"
+    __SHOW_COMMAND = re.compile(r'^SHOW (\w+)$', re.IGNORECASE)
+    __INSERT_COMMAND = re.compile(r'^INSERT (\w+)\((.+)\)$', re.IGNORECASE)
+    __DELETE_COMMAND = re.compile(r'^DELETE (\w+)\(([\d,]+)\)$', re.IGNORECASE)
+    __SELECT_COMMAND = re.compile(r'^SELECT (\w+)\(([\d,]+)\)$', re.IGNORECASE)
+    __FUNCTION_COMMAND = re.compile(r'^FUNCTION$', re.IGNORECASE)
+    __EXIT_COMMAND = re.compile(r'^EXIT$', re.IGNORECASE)
 
     def __init__(self):
         self._model = None
@@ -36,70 +36,48 @@ class Presenter(object):
         self._application = ref()
 
     def make_request(self, request):
-        if re.match(self.__SHOW_COMMAND, request, re.IGNORECASE):
+        disassembled_request = Presenter.__SHOW_COMMAND.match(request)
+        if disassembled_request:
+            table_name = disassembled_request.group(1)
+            self.__show_table(table_name)
+            return
 
-            table_name_regex = re.compile(r'\w+', re.IGNORECASE)
-            table_name = table_name_regex.match(request, len(self.__SHOW_COMMAND))
+        disassembled_request = Presenter.__INSERT_COMMAND.match(request)
+        if disassembled_request:
+            table_name = disassembled_request.group(1)
+            values = disassembled_request.group(2).split(',')
+            self.__insert_into_table(table_name, values)
+            return
 
-            if table_name:
-                self.__show_table(table_name.group(0))
-            else:
-                view.syntax_error(request)
+        disassembled_request = Presenter.__SELECT_COMMAND.match(request)
+        if disassembled_request:
+            table_name = disassembled_request.group(1)
+            values = [int(entity_id.strip()) for entity_id in disassembled_request.group(2).split(',')]
+            self.__select(table_name, values)
+            return
 
-        elif re.match(self.__INSERT_COMMAND, request, re.IGNORECASE):
+        disassembled_request = Presenter.__DELETE_COMMAND.match(request)
+        if disassembled_request:
+            table_name = disassembled_request.group(1)
+            values = [int(entity_id.strip()) for entity_id in disassembled_request.group(2).split(',')]
+            self.__delete(table_name, values)
+            return
 
-            table_name_regex = re.compile(r'\w+', re.IGNORECASE)
-            table_name = table_name_regex.match(request, len(self.__INSERT_COMMAND))
-            values = re.search(r'\(.+\)', request)
-
-            if table_name and values:
-                values_list = values.group(0).translate(None, "()").split(",")
-                self.__insert_into_table(table_name.group(0), values_list)
-            else:
-                view.syntax_error(request)
-
-        elif re.match(self.__SELECT_COMMAND, request, re.IGNORECASE):
-
-            table_name_regex = re.compile(r'\w+', re.IGNORECASE)
-            table_name = table_name_regex.match(request, len(self.__SELECT_COMMAND))
-            values = re.search(r'\([\d,]+\)', request)
-
-            if table_name and values:
-                values_list = values.group(0).translate(None, "()").split(",")
-                values_list = [int(entity_id.strip()) for entity_id in values_list]
-                self.__select(table_name.group(0), values_list)
-            else:
-                view.syntax_error(request)
-
-        elif re.match(self.__DELETE_COMMAND, request, re.IGNORECASE):
-
-            table_name_regex = re.compile(r'\w+', re.IGNORECASE)
-            table_name = table_name_regex.match(request, len(self.__DELETE_COMMAND))
-            values = re.search(r'\([\d]+\)', request)
-
-            if table_name and values:
-                values_list = values.group(0).translate(None, "()").split(",")
-                values_list = [int(entity_id.strip()) for entity_id in values_list]
-                self.__delete(table_name.group(0), values_list)
-            else:
-                view.syntax_error(request)
-
-        elif re.match(self.__FUNCTION_COMMAND, request, re.IGNORECASE):
+        if Presenter.__FUNCTION_COMMAND.match(request):
             self.__function()
+            return
 
-        elif re.match(self.__EXIT_COMMAND, request, re.IGNORECASE):
+        if Presenter.__EXIT_COMMAND.match(request):
             self.application.stop()
+            return
 
-        else:
-            command = re.match(r'\w+', request)
-            if command:
-                view.unknown_command(command.group(0))
+        view.syntax_error(request)
 
     def __show_table(self, table_name):
         if table_name in self.model:
             view.show_table(self.model[table_name])
         else:
-            view.unknown_command(table_name)
+            view.unknown_table(table_name)
 
     def __insert_into_table(self, table_name, values_list):
         if table_name in self.model:
